@@ -1,0 +1,10 @@
+.DS_Store
+/vendor/
+
+/.idea/
+/*.iml
+/mc-motd.exe
+/mc-motd
+/dist/
+/*.private.env.json
+/kustomization.yml
