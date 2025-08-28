@@ -18,6 +18,8 @@ const (
 	handshakeTimeout = 5 * time.Second
 )
 
+var noDeadline time.Time
+
 func NewConnector(ctx context.Context, config *Config, motdManager *MOTDManager) *Connector {
 
 	return &Connector{
@@ -232,21 +234,21 @@ func (c *Connector) findAndConnectBackend(frontendConn net.Conn,
 }
 
 func (c *Connector) handleStatusRequest(frontendConn net.Conn, clientAddr net.Addr, serverAddress string) {
-	bufferedReader := bufio.NewReader(frontendConn)
-
 	logrus.
 		WithField("client", clientAddr).
 		WithField("server", serverAddress).
 		Info("Handling status request")
 
-	// Set read deadline for status packet
-	if err := frontendConn.SetReadDeadline(time.Now().Add(handshakeTimeout)); err != nil {
+	// Clear the read deadline since we'll be doing multiple reads
+	if err := frontendConn.SetReadDeadline(noDeadline); err != nil {
 		logrus.
 			WithError(err).
 			WithField("client", clientAddr).
-			Error("Failed to set read deadline for status packet")
+			Error("Failed to clear read deadline")
 		return
 	}
+
+	bufferedReader := bufio.NewReader(frontendConn)
 
 	statusPacket, err := mcproto.ReadPacket(bufferedReader, clientAddr, mcproto.StateStatus)
 	if err != nil {
@@ -269,15 +271,6 @@ func (c *Connector) handleStatusRequest(frontendConn net.Conn, clientAddr net.Ad
 		}
 
 		// Wait for ping request
-		// Set read deadline for ping packet
-		if err := frontendConn.SetReadDeadline(time.Now().Add(handshakeTimeout)); err != nil {
-			logrus.
-				WithError(err).
-				WithField("client", clientAddr).
-				Error("Failed to set read deadline for ping packet")
-			return
-		}
-
 		pingPacket, err := mcproto.ReadPacket(bufferedReader, clientAddr, mcproto.StateStatus)
 		if err != nil {
 			logrus.WithError(err).WithField("client", clientAddr).Error("Failed to read ping packet")
