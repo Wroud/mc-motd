@@ -161,7 +161,7 @@ func (c *Connector) HandleConnection(frontendConn net.Conn) {
 				Debug("Got user info")
 		}
 
-		c.findAndConnectBackend(frontendConn, clientAddr, inspectionBuffer, handshake.ServerAddress, playerInfo, handshake.NextState)
+		c.findAndConnectBackend(frontendConn, clientAddr, inspectionBuffer, handshake.ServerAddress, playerInfo, handshake.NextState, bufferedReader)
 
 	case mcproto.PacketIdLegacyServerListPing:
 		handshake, ok := packet.Data.(*mcproto.LegacyServerListPing)
@@ -180,7 +180,7 @@ func (c *Connector) HandleConnection(frontendConn net.Conn) {
 
 		serverAddress := handshake.ServerAddress
 
-		c.findAndConnectBackend(frontendConn, clientAddr, inspectionBuffer, serverAddress, nil, mcproto.StateStatus)
+		c.findAndConnectBackend(frontendConn, clientAddr, inspectionBuffer, serverAddress, nil, mcproto.StateStatus, bufferedReader)
 	default:
 		logrus.
 			WithField("client", clientAddr).
@@ -211,7 +211,7 @@ func (c *Connector) readPlayerInfo(protocolVersion mcproto.ProtocolVersion, buff
 }
 
 func (c *Connector) findAndConnectBackend(frontendConn net.Conn,
-	clientAddr net.Addr, preReadContent io.Reader, serverAddress string, playerInfo *PlayerInfo, nextState mcproto.State) {
+	clientAddr net.Addr, preReadContent io.Reader, serverAddress string, playerInfo *PlayerInfo, nextState mcproto.State, bufferedReader *bufio.Reader) {
 
 	logrus.
 		WithField("client", clientAddr).
@@ -222,7 +222,7 @@ func (c *Connector) findAndConnectBackend(frontendConn net.Conn,
 
 	switch nextState {
 	case mcproto.StateStatus:
-		c.handleStatusRequest(frontendConn, clientAddr, serverAddress)
+		c.handleStatusRequest(frontendConn, clientAddr, serverAddress, bufferedReader)
 	case mcproto.StateLogin:
 		c.handleLoginRequest(frontendConn, clientAddr, serverAddress, playerInfo)
 	default:
@@ -233,7 +233,7 @@ func (c *Connector) findAndConnectBackend(frontendConn net.Conn,
 	}
 }
 
-func (c *Connector) handleStatusRequest(frontendConn net.Conn, clientAddr net.Addr, serverAddress string) {
+func (c *Connector) handleStatusRequest(frontendConn net.Conn, clientAddr net.Addr, serverAddress string, bufferedReader *bufio.Reader) {
 	logrus.
 		WithField("client", clientAddr).
 		WithField("server", serverAddress).
@@ -247,8 +247,6 @@ func (c *Connector) handleStatusRequest(frontendConn net.Conn, clientAddr net.Ad
 			Error("Failed to clear read deadline")
 		return
 	}
-
-	bufferedReader := bufio.NewReader(frontendConn)
 
 	statusPacket, err := mcproto.ReadPacket(bufferedReader, clientAddr, mcproto.StateStatus)
 	if err != nil {
