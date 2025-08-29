@@ -67,14 +67,30 @@ const (
 	// ProtocolVersion1_19_2 is the protocol version for Minecraft 1.19.2
 	// Docs: https://minecraft.wiki/w/Java_Edition_protocol/Packets?oldid=2772944
 	ProtocolVersion1_19_2 ProtocolVersion = 760
-	// ProtocolVersion1_19_2 is the protocol version for Minecraft 1.19.3
+	// ProtocolVersion1_19_3 is the protocol version for Minecraft 1.19.3
 	ProtocolVersion1_19_3 ProtocolVersion = 761
+	// ProtocolVersion1_19_4 is the protocol version for Minecraft 1.19.4
+	ProtocolVersion1_19_4 ProtocolVersion = 762
+	// ProtocolVersion1_20 is the protocol version for Minecraft 1.20/1.20.1
+	ProtocolVersion1_20 ProtocolVersion = 763
 	// ProtocolVersion1_20_2 is the protocol version for Minecraft 1.20.2
 	ProtocolVersion1_20_2 ProtocolVersion = 764
+	// ProtocolVersion1_20_3 is the protocol version for Minecraft 1.20.3/1.20.4
+	ProtocolVersion1_20_3 ProtocolVersion = 765
+	// ProtocolVersion1_20_5 is the protocol version for Minecraft 1.20.5
+	ProtocolVersion1_20_5 ProtocolVersion = 766
+	// ProtocolVersion1_21 is the protocol version for Minecraft 1.21/1.21.1
+	ProtocolVersion1_21 ProtocolVersion = 767
+	// ProtocolVersion1_21_2 is the protocol version for Minecraft 1.21.2/1.21.3
+	ProtocolVersion1_21_2 ProtocolVersion = 768
+	// ProtocolVersion1_21_4 is the protocol version for Minecraft 1.21.4
+	ProtocolVersion1_21_4 ProtocolVersion = 769
 	// ProtocolVersion1_21_5 is the protocol version for Minecraft 1.21.5
 	ProtocolVersion1_21_5 ProtocolVersion = 770
-	// ProtocolVersion1_21_8 is the protocol version for Minecraft 1.21.8
-	ProtocolVersion1_21_8 ProtocolVersion = 772
+	// ProtocolVersion1_21_6 is the protocol version for Minecraft 1.21.6
+	ProtocolVersion1_21_6 ProtocolVersion = 771
+	// ProtocolVersion1_21_7 is the protocol version for Minecraft 1.21.7/1.21.8
+	ProtocolVersion1_21_7 ProtocolVersion = 772
 )
 
 const (
@@ -118,3 +134,37 @@ type ByteReader interface {
 const (
 	PacketLengthFieldBytes = 1
 )
+
+// VersionToProtocol maps Minecraft version strings to their corresponding protocol numbers
+func VersionToProtocol(version string) (int, bool) {
+	versionMap := map[string]int{
+		"1.18.2": int(ProtocolVersion1_18_2), // 758
+		"1.19":   int(ProtocolVersion1_19),   // 759
+		"1.19.0": int(ProtocolVersion1_19),   // 759
+		"1.19.1": int(ProtocolVersion1_19_2), // 760 (1.19.1 uses same as 1.19.2)
+		"1.19.2": int(ProtocolVersion1_19_2), // 760
+		"1.19.3": int(ProtocolVersion1_19_3), // 761
+		"1.19.4": int(ProtocolVersion1_19_4), // 762
+		"1.20":   int(ProtocolVersion1_20),   // 763
+		"1.20.0": int(ProtocolVersion1_20),   // 763
+		"1.20.1": int(ProtocolVersion1_20),   // 763
+		"1.20.2": int(ProtocolVersion1_20_2), // 764
+		"1.20.3": int(ProtocolVersion1_20_3), // 765
+		"1.20.4": int(ProtocolVersion1_20_3), // 765 (1.20.4 uses same as 1.20.3)
+		"1.20.5": int(ProtocolVersion1_20_5), // 766
+		"1.20.6": int(ProtocolVersion1_20_5), // 766 (1.20.6 uses same as 1.20.5)
+		"1.21":   int(ProtocolVersion1_21),   // 767
+		"1.21.0": int(ProtocolVersion1_21),   // 767
+		"1.21.1": int(ProtocolVersion1_21),   // 767
+		"1.21.2": int(ProtocolVersion1_21_2), // 768
+		"1.21.3": int(ProtocolVersion1_21_2), // 768 (1.21.3 uses same as 1.21.2)
+		"1.21.4": int(ProtocolVersion1_21_4), // 769
+		"1.21.5": int(ProtocolVersion1_21_5), // 770
+		"1.21.6": int(ProtocolVersion1_21_6), // 771
+		"1.21.7": int(ProtocolVersion1_21_7), // 772
+		"1.21.8": int(ProtocolVersion1_21_7), // 772 (1.21.8 uses same as 1.21.7)
+	}
+
+	protocol, exists := versionMap[version]
+	return protocol, exists
+}

@@ -262,7 +262,7 @@ func (c *Connector) handleStatusRequest(frontendConn net.Conn, clientAddr net.Ad
 			c.config.ServerStatus.MaxPlayers,
 			0,
 			c.config.ServerStatus.Version,
-			c.config.ServerStatus.Protocol)
+			c.config.ServerStatus.GetProtocol())
 		if err != nil {
 			logrus.WithError(err).WithField("client", clientAddr).Error("Failed to write status response")
 			return
@@ -322,4 +322,12 @@ func (c *Connector) handleLoginRequest(frontendConn net.Conn, clientAddr net.Add
 		WithField("player", playerInfo).
 		WithField("reason", disconnectReason).
 		Info("Disconnected player with startup message")
+
+	if c.connectionNotifier != nil {
+		backendErr := fmt.Errorf("server is starting up, no backend available")
+		notifyErr := c.connectionNotifier.NotifyFailedBackendConnection(c.ctx, clientAddr, serverAddress, playerInfo, serverAddress, backendErr)
+		if notifyErr != nil {
+			logrus.WithError(notifyErr).Warn("failed to notify failed backend connection")
+		}
+	}
 }
